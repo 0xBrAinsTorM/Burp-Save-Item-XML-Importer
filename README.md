@@ -1,53 +1,45 @@
-# Burp-Save-Item-XML-Importer
-Burp Suite extension for importing saved Request/Response XML items back into the Site Map.
 # Burp Save Item XML Importer
 
-A small Burp Suite extension that imports XML files created through **Save item(s)** back into **Target → Site map**, including the original request and response.
+A small Burp Suite extension that imports Burp's own **Save item(s)** XML files
+into **Target > Site map**. Imported requests and stored responses remain local;
+the extension never sends an HTTP request.
 
-The extension never sends imported requests automatically.
+## Install
 
-## Features
+1. Open **Extensions > Installed** in Burp Suite.
+2. Select **Add**, choose extension type **Java**, and select
+   `burp-save-item-importer-1.0.1.jar`.
+3. Open the new **Save Item XML Importer** suite tab.
+4. Select **Import Burp XML**, choose a trusted XML export, and review the
+   import result.
+5. Find the imported item under **Target > Site map**. You can send its request
+   to Repeater from there.
 
-* Imports single or multiple Burp XML items
-* Restores requests and stored responses
-* Supports Burp’s internal XML DTD
-* Rejects external DTDs and XML entities
-* Validates Base64 data, hosts, ports, and protocols
-* Uses the modern Montoya API
-* Performs no network communication
+Use a current Burp Suite release. The extension targets Montoya API 2026.7 and
+Java 17 bytecode.
 
-## Installation
+## Security properties
 
-1. Download the latest JAR from [Releases](../../releases).
-2. Open **Extensions → Installed** in Burp Suite.
-3. Click **Add** and select **Java** as the extension type.
-4. Select the downloaded JAR.
-5. Open the **Save Item XML Importer** tab.
+- Burp's internal schema DTD is accepted but never processed. Entity
+  declarations, external DTDs, and entity references are rejected.
+- XML is parsed as a stream with explicit file, item, field, request, and
+  response limits.
+- `request` and `response` must use `base64="true"`; Base64 is validated
+  strictly after removing ASCII whitespace.
+- Only `http` and `https`, ports 1-65535, and non-control host values are
+  accepted.
+- Duplicate required fields are rejected.
+- The importer performs no network access and never replays a request.
 
-## Usage
+Current limits: 50 MiB XML file, 10,000 items, 10 MiB per request, 30 MiB per
+response. Burp's Site Map may replace an existing matching entry.
 
-1. In Burp, save one or more HTTP history items using **Save item(s)**.
-2. Open the importer tab.
-3. Click **Import Burp XML** and select the exported XML file.
-4. Find the imported entries under **Target → Site map**.
-5. Send a request to Repeater if required.
+## Rebuild
 
-Imported requests are not replayed automatically.
+With JDK 17+ and Gradle installed:
 
-## Build
-
-The project requires Java 17 or newer.
-
-```bash
+```sh
 gradle clean check jar
 ```
 
-The resulting JAR is created under:
-
-```text
-build/libs/
-```
-
-## License
-
-MIT
+The Montoya API is a compile-only dependency and is not bundled in the JAR.
